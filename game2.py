@@ -190,13 +190,17 @@ def print_menu(exits, room_items, inv_items):
     What do you want to do?
 
     """
+    print("You can:")
+    for exit in exits:
+        print_exit(exit,exit_leads_to(exits,exit))
     for item in room_items:
         print("TAKE " + item["id"].upper() + " to take " + item["name"])
     for item in inv_items:
         print("DROP " + item["id"].upper() + " to drop " + item["name"])
     
-    print("What do you want to do?")
-    #
+    #    print("You can:")
+    
+    print("Where do you want to go?")
     # COMPLETE ME!
     #
     
@@ -221,7 +225,6 @@ def is_valid_exit(exits, chosen_exit):
     """
     return chosen_exit in exits
 
-
 def execute_go(direction):
     """This function, given the direction (e.g. "south") updates the current room
     to reflect the movement of the player if the direction is a valid exit
@@ -231,7 +234,10 @@ def execute_go(direction):
     pass
 
     global current_room
-    current_room = move(current_room["exits"], direction)
+    if is_valid_exit(current_room['exits'], direction):
+        current_room = move(current_room['exits'], direction)
+    else:
+        print("You cannot go there.")
 
 def execute_take(item_id):
     """This function takes an item_id as an argument and moves this item from the
@@ -240,19 +246,31 @@ def execute_take(item_id):
     "You cannot take that."
     """
     pass
-    
+    global inventory
+    global current_room
     item_exists = False
+    if inventory_weight() == True:
+        for item in current_room["items"]:
+            if item_id == item["id"]:
+                item_exists = True
+                current_room["items"].remove(item)
+                inventory.append(item)
+                print(item["name"] + " added to inventory.")
 
-    for item in current_room["items"]:
-        if item_id == item["id"]:
-            item_exists = True
-            current_room["items"].remove(item)
-            inventory.append(item)
-            print(item["name"] + " added to inventory.")
     if not item_exists:
-        print("You cannot take that.")
+        print("Your Inventory is too heavy")
 
-
+def inventory_weight():
+	global inventory_weight
+	total_mass = 0
+	for ch in inventory:
+		total_mass += ch["mass"]
+		
+	if total_mass < 3.0:
+		return True
+	else:
+		return False
+		
 def execute_drop(item_id):
     """This function takes an item_id as an argument and moves this item from the
     player's inventory to list of items in the current room. However, if there is
